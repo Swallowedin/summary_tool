@@ -15,6 +15,68 @@ st.set_page_config(page_title="AI Document Summarizer", layout="wide")
 # Configuration d'OpenAI avec la clé API depuis les secrets
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
+def extract_text_from_pdf(file):
+    """Extrait le texte d'un fichier PDF."""
+    reader = PdfReader(file)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text() + "\n"
+    return text
+
+def extract_text_from_docx(file):
+    """Extrait le texte d'un fichier DOCX."""
+    doc = docx.Document(file)
+    text = ""
+    for paragraph in doc.paragraphs:
+        text += paragraph.text + "\n"
+    return text
+
+def extract_text_from_excel(file):
+    """Extrait le texte d'un fichier Excel."""
+    df = pd.read_excel(file)
+    text = ""
+    # Ajoute les noms des colonnes
+    text += "Colonnes : " + ", ".join(df.columns) + "\n\n"
+    # Ajoute un résumé des données
+    text += f"Nombre de lignes : {len(df)}\n"
+    text += f"Résumé des données :\n"
+    # Ajoute les premières lignes
+    text += df.head().to_string() + "\n"
+    return text
+
+def extract_text_from_pptx(file):
+    """Extrait le texte d'une présentation PowerPoint."""
+    prs = Presentation(file)
+    text = ""
+    for slide in prs.slides:
+        text += f"\n--- Nouvelle diapositive ---\n"
+        for shape in slide.shapes:
+            if hasattr(shape, "text"):
+                text += shape.text + "\n"
+    return text
+
+def get_file_content(uploaded_file):
+    """Extrait le contenu du fichier selon son type."""
+    if uploaded_file is None:
+        return None
+        
+    file_type = uploaded_file.type
+    
+    try:
+        if file_type == "application/pdf":
+            return extract_text_from_pdf(uploaded_file)
+        elif file_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+            return extract_text_from_docx(uploaded_file)
+        elif file_type in ["application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]:
+            return extract_text_from_excel(uploaded_file)
+        elif file_type in ["application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation"]:
+            return extract_text_from_pptx(uploaded_file)
+        else:
+            return uploaded_file.getvalue().decode("utf-8")
+    except Exception as e:
+        st.error(f"Erreur lors de la lecture du fichier : {str(e)}")
+        return None
+
 def detect_text_language(text):
     """Détecte la langue du texte via GPT."""
     try:
@@ -27,12 +89,10 @@ def detect_text_language(text):
             temperature=0,
             max_tokens=2
         )
-        return response.message.content.strip()
+        return response.choices[0].message.content.strip()
     except Exception as e:
         st.error(f"Erreur lors de la détection de la langue : {str(e)}")
         return "fr"  # Langue par défaut
-
-[... Le reste des fonctions d'extraction de texte reste identique ...]
 
 def get_summary_from_openai(text, summary_type, max_length, detect_language=True, input_language=None, output_language="fr"):
     """Obtient un résumé via l'API OpenAI."""
