@@ -1,10 +1,13 @@
 import streamlit as st
+from openai import OpenAI
+import tempfile
+import os
+from pypdf import PdfReader
+import docx
 import pandas as pd
-from datetime import datetime
-import json
-import base64
-import plotly.graph_objects as go
-from collections import defaultdict
+from pptx import Presentation
+import openpyxl
+import time
 
 # Configuration de la page Streamlit
 st.set_page_config(page_title="AI Document Summarizer", layout="wide")
@@ -78,7 +81,7 @@ def detect_text_language(text):
     """Détecte la langue du texte via GPT."""
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Tu es un expert en détection de langues. Réponds uniquement par le code de langue ISO 639-1 (fr, en, es, etc.)."},
                 {"role": "user", "content": f"Quelle est la langue de ce texte ? Réponds uniquement par le code langue.\n\nTexte: {text[:500]}"}
