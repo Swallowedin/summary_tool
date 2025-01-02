@@ -1,8 +1,7 @@
---upgrade pip
-openai==1.6.1
-streamlit==1.29.0
-python-docx==1.0.0
-pypdf==3.17.0
-pandas==2.1.4
-python-pptx==0.6.22
-openpyxl==3.1.2
+streamlit==1.28.0
+openai>=0.28.0,<1.0.0
+python-docx
+pypdf
+pandas
+python-pptx
+openpyxl
