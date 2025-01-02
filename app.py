@@ -1,13 +1,10 @@
 import streamlit as st
-from openai import OpenAI
-import tempfile
-import os
-from pypdf import PdfReader
-import docx
 import pandas as pd
-from pptx import Presentation
-import openpyxl
-import time
+from datetime import datetime
+import json
+import base64
+import plotly.graph_objects as go
+from collections import defaultdict
 
 # Configuration de la page Streamlit
 st.set_page_config(page_title="AI Document Summarizer", layout="wide")
