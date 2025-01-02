@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+import openai
 from pypdf import PdfReader
 import docx
 import pandas as pd
@@ -12,8 +12,8 @@ st.set_page_config(
     layout="wide"
 )
 
-# Initialisation du client OpenAI
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+# Configuration d'OpenAI avec la clé API depuis les secrets
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 def extract_text_from_pdf(file):
     try:
@@ -96,7 +96,7 @@ def get_summary(text, summary_type, target_language, max_length):
             "executive": f"Crée un executive summary de ce texte en {target_language} (~{max_length} mots) :\n\n{text}"
         }
 
-        response = client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "Tu es un expert en résumé et synthèse de documents."},
@@ -106,7 +106,7 @@ def get_summary(text, summary_type, target_language, max_length):
             max_tokens=1000
         )
         
-        return response.choices[0].message.content
+        return response['choices'][0]['message']['content']
     except Exception as e:
         st.error(f"Erreur lors de la génération du résumé : {str(e)}")
         return None
